@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: drone-management-system
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node src/server.js
+    envVars:
+      - key: PORT
+        value: 5000
+    plan: free
