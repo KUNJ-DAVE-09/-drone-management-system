@@ -2,7 +2,7 @@ services:
   - type: web
     name: drone-management-system
     runtime: node
-    rootDir: backend
-    buildCommand: npm install
-    startCommand: node src/server.js
+    buildCommand: cd backend && npm install
+    startCommand: node backend/src/server.js
     plan: free
+    autoDeploy: true
