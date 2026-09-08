@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IADMS — Indian Army Drone Management System</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+<div class="classification-banner">⚡ TOP SECRET — RESTRICTED ACCESS — AUTHORISED PERSONNEL ONLY ⚡</div>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="emblem">🪖</div>
+      <h1>IADMS</h1>
+      <p>INDIAN ARMY DRONE MANAGEMENT SYSTEM</p>
+    </div>
+    <form class="login-form" id="login-form">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="login-username" placeholder="Enter username" autocomplete="username" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="Enter password" autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn-login">🔐 AUTHENTICATE</button>
+      <div id="login-error">Invalid credentials. Access denied.</div>
+    </form>
+    <div class="login-hint">Demo: <span>admin</span> / <span>Admin@Army2024</span></div>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div id="app">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-logo">
+      <span class="logo-icon">🪖</span>
+      <div>
+        <h1>IADMS</h1>
+        <p>DRONE CONTROL</p>
+      </div>
+    </div>
+    <div class="topbar-center">
+      <div class="system-status">
+        <span class="status-dot"></span>
+        <span>SYSTEM OPERATIONAL</span>
+      </div>
+      <div class="threat-level moderate" id="threat-indicator">⚠️ THREAT: MODERATE</div>
+    </div>
+    <div class="clock" id="clock">--:--:--</div>
+    <div class="topbar-right">
+      <div class="alert-badge" onclick="navigate('alerts')" style="cursor:pointer;">
+        <span class="icon">🔔</span>
+        <span class="badge-count" id="alert-badge-count">0</span>
+      </div>
+      <div class="user-chip">
+        <div class="avatar" id="user-avatar">A</div>
+        <span class="name" id="user-name">Loading…</span>
+      </div>
+      <button class="btn-logout" onclick="logout()">LOGOUT</button>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-label">OPERATIONS</div>
+    <div class="sidebar-section">
+      <div class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
+        <span class="nav-icon">📊</span> Dashboard
+      </div>
+      <div class="nav-item" data-page="drones" onclick="navigate('drones')">
+        <span class="nav-icon">🚁</span> Drones
+        <span class="nav-badge green" id="nav-drones-count">6</span>
+      </div>
+      <div class="nav-item" data-page="missions" onclick="navigate('missions')">
+        <span class="nav-icon">🎯</span> Missions
+      </div>
+      <div class="nav-item" data-page="map" onclick="navigate('map')">
+        <span class="nav-icon">🗺️</span> Live Map
+      </div>
+    </div>
+    <div class="sidebar-label">PERSONNEL</div>
+    <div class="sidebar-section">
+      <div class="nav-item" data-page="pilots" onclick="navigate('pilots')">
+        <span class="nav-icon">👨‍✈️</span> Pilots
+      </div>
+    </div>
+    <div class="sidebar-label">SECURITY</div>
+    <div class="sidebar-section">
+      <div class="nav-item" data-page="alerts" onclick="navigate('alerts')">
+        <span class="nav-icon">🚨</span> Alerts
+        <span class="nav-badge" id="nav-alerts-count">0</span>
+      </div>
+      <div class="nav-item" data-page="telemetry" onclick="navigate('telemetry')">
+        <span class="nav-icon">📡</span> Telemetry
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Operations Dashboard</div>
+          <div class="page-subtitle">Real-time overview — Northern Command</div>
+        </div>
+        <button class="btn btn-primary" onclick="refreshDashboard()">↻ Refresh</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card blue"><span class="label">Total Drones</span><span class="value" id="stat-total">—</span><span class="sub">Fleet size</span></div>
+        <div class="stat-card green"><span class="label">Active</span><span class="value" id="stat-active">—</span><span class="sub">In flight</span></div>
+        <div class="stat-card blue"><span class="label">On Mission</span><span class="value" id="stat-mission">—</span><span class="sub">Deployed</span></div>
+        <div class="stat-card yellow"><span class="label">Maintenance</span><span class="value" id="stat-maintenance">—</span><span class="sub">Grounded</span></div>
+        <div class="stat-card orange"><span class="label">Charging</span><span class="value" id="stat-charging">—</span><span class="sub">Recharging</span></div>
+        <div class="stat-card red"><span class="label">Critical Alerts</span><span class="value" id="stat-crit-alerts">—</span><span class="sub">Unresolved</span></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🎯 Active Missions</span>
+            <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px;" onclick="navigate('missions')">View All</button>
+          </div>
+          <div id="dashboard-missions"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🚨 Recent Alerts</span>
+            <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px;" onclick="navigate('alerts')">View All</button>
+          </div>
+          <div id="dashboard-alerts"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">🚁 Fleet Status</span></div>
+        <div id="dashboard-fleet"></div>
+      </div>
+    </div>
+
+    <!-- DRONES -->
+    <div class="page" id="page-drones">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Drone Fleet</div>
+          <div class="page-subtitle">Manage and monitor all drones</div>
+        </div>
+        <button class="btn btn-primary" onclick="openAddDroneModal()">+ Add Drone</button>
+      </div>
+      <div class="card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th><th>Name</th><th>Type</th><th>Status</th><th>Battery</th>
+              <th>Altitude</th><th>Speed</th><th>Regiment</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="drones-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MISSIONS -->
+    <div class="page" id="page-missions">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Mission Control</div>
+          <div class="page-subtitle">Plan, monitor and manage operations</div>
+        </div>
+        <button class="btn btn-primary" onclick="openAddMissionModal()">+ New Mission</button>
+      </div>
+      <div id="missions-list"></div>
+    </div>
+
+    <!-- LIVE MAP -->
+    <div class="page" id="page-map">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Live Tactical Map</div>
+          <div class="page-subtitle">Real-time drone positions — Northern India Theatre</div>
+        </div>
+        <button class="btn btn-primary" onclick="refreshMap()">↻ Refresh</button>
+      </div>
+      <div id="map-container">
+        <div class="map-overlay">
+          <button class="map-btn" onclick="filterMapDrones('ALL')">All</button>
+          <button class="map-btn" onclick="filterMapDrones('ACTIVE')">Active</button>
+          <button class="map-btn" onclick="filterMapDrones('MISSION')">Mission</button>
+        </div>
+        <svg id="tactical-map" viewBox="0 0 900 500" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="map-legend">
+          <h4>Legend</h4>
+          <div class="legend-item"><div class="legend-dot" style="background:#00ff9d"></div>Active</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#00d4ff"></div>Mission</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ffd700"></div>Charging</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ff6b2b"></div>Maintenance</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#64748b"></div>Idle</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PILOTS -->
+    <div class="page" id="page-pilots">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Pilot Registry</div>
+          <div class="page-subtitle">Certified drone operators</div>
+        </div>
+        <button class="btn btn-primary" onclick="openAddPilotModal()">+ Add Pilot</button>
+      </div>
+      <div id="pilots-list"></div>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="page" id="page-alerts">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Alert Management</div>
+          <div class="page-subtitle">Active threats and notifications</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-secondary" onclick="filterAlerts('ALL')">All</button>
+          <button class="btn btn-danger" onclick="filterAlerts('CRITICAL')">Critical</button>
+          <button class="btn btn-warning" onclick="filterAlerts('HIGH')">High</button>
+        </div>
+      </div>
+      <div id="alerts-list"></div>
+    </div>
+
+    <!-- TELEMETRY -->
+    <div class="page" id="page-telemetry">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Live Telemetry</div>
+          <div class="page-subtitle">Real-time drone sensor data</div>
+        </div>
+        <button class="btn btn-primary" onclick="refreshTelemetry()">↻ Refresh</button>
+      </div>
+      <div id="telemetry-grid" class="grid-2"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL: Add Drone -->
+<div class="modal-overlay" id="modal-add-drone">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">🚁 Register New Drone</span>
+      <button class="modal-close" onclick="closeModal('modal-add-drone')">✕</button>
+    </div>
+    <form id="form-add-drone">
+      <div class="form-row">
+        <div class="form-group"><label>Drone Name</label><input type="text" name="name" placeholder="e.g. Garuda-Golf" required /></div>
+        <div class="form-group"><label>Type</label>
+          <select name="type">
+            <option value="SURVEILLANCE">Surveillance</option>
+            <option value="COMBAT">Combat</option>
+            <option value="RECONNAISSANCE">Reconnaissance</option>
+            <option value="LOGISTICS">Logistics</option>
+            <option value="EW">Electronic Warfare</option>
+            <option value="SWARM">Swarm</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Serial Number</label><input type="text" name="serialNumber" placeholder="IA-DRN-2024-XXX" /></div>
+        <div class="form-group"><label>Regiment</label><input type="text" name="regiment" placeholder="Regiment name" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Payload</label><input type="text" name="payload" placeholder="e.g. EO/IR Camera" /></div>
+        <div class="form-group"><label>Max Altitude (m)</label><input type="number" name="maxAltitude" value="5000" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Range (km)</label><input type="number" name="range" value="150" /></div>
+        <div class="form-group"><label>Last Maintenance</label><input type="date" name="lastMaintenance" /></div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-add-drone')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Register Drone</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: Add Mission -->
+<div class="modal-overlay" id="modal-add-mission">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">🎯 Create New Mission</span>
+      <button class="modal-close" onclick="closeModal('modal-add-mission')">✕</button>
+    </div>
+    <form id="form-add-mission">
+      <div class="form-group"><label>Mission Name</label><input type="text" name="name" placeholder="Op. Name" required /></div>
+      <div class="form-row">
+        <div class="form-group"><label>Type</label>
+          <select name="type">
+            <option value="BORDER_PATROL">Border Patrol</option>
+            <option value="ISR">ISR</option>
+            <option value="STRIKE">Strike</option>
+            <option value="LOGISTICS">Logistics</option>
+            <option value="SEARCH_RESCUE">Search &amp; Rescue</option>
+            <option value="EW_OPS">EW Ops</option>
+            <option value="SWARM_OPS">Swarm Ops</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Priority</label>
+          <select name="priority">
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
+            <option value="CRITICAL">Critical</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Classification</label>
+          <select name="classification">
+            <option value="UNCLASSIFIED">Unclassified</option>
+            <option value="CONFIDENTIAL">Confidential</option>
+            <option value="SECRET">Secret</option>
+            <option value="TOP SECRET">Top Secret</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Threat Level</label>
+          <select name="threatLevel">
+            <option value="LOW">Low</option>
+            <option value="MODERATE">Moderate</option>
+            <option value="HIGH">High</option>
+            <option value="CRITICAL">Critical</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label>Sector / Area</label><input type="text" name="sector" placeholder="e.g. Northern Command - LOC Sector Alpha" /></div>
+      <div class="form-group"><label>Objective</label><textarea name="objective" rows="3" placeholder="Mission objective…"></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label>Commanding Officer</label><input type="text" name="commandingOfficer" placeholder="Rank. Name" /></div>
+        <div class="form-group"><label>Est. Duration (min)</label><input type="number" name="estimatedDuration" value="120" /></div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-add-mission')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Mission</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: Add Pilot -->
+<div class="modal-overlay" id="modal-add-pilot">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">👨‍✈️ Register New Pilot</span>
+      <button class="modal-close" onclick="closeModal('modal-add-pilot')">✕</button>
+    </div>
+    <form id="form-add-pilot">
+      <div class="form-row">
+        <div class="form-group"><label>Full Name</label><input type="text" name="name" placeholder="Rank. Full Name" required /></div>
+        <div class="form-group"><label>Rank</label><input type="text" name="rank" placeholder="e.g. Havildar" required /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Regiment</label><input type="text" name="regiment" placeholder="Regiment" /></div>
+        <div class="form-group"><label>License Number</label><input type="text" name="licenseNumber" placeholder="IA-DPL-YYYY-XXX" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Clearance Level</label>
+          <select name="clearanceLevel">
+            <option value="CONFIDENTIAL">Confidential</option>
+            <option value="SECRET">Secret</option>
+            <option value="TOP_SECRET">Top Secret</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Total Flight Hours</label><input type="number" name="totalFlightHours" value="0" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Email</label><input type="email" name="email" placeholder="name@army.mil.in" /></div>
+        <div class="form-group"><label>Phone</label><input type="text" name="phone" placeholder="+91-98000XXXXX" /></div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-add-pilot')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Register Pilot</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script src="/js/dashboard.js"></script>
+<script src="/js/drones.js"></script>
+<script src="/js/missions.js"></script>
+<script src="/js/pilots.js"></script>
+<script src="/js/alerts.js"></script>
+</body>
+</html>
